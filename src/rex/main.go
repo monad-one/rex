@@ -5,52 +5,46 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 const alsGCF = "https://us-central1-devfest18-221623.cloudfunctions.net/recommend"
-const fakeResp = `[
-	{
-	  "movie_id": 121029,
-	  "prediction": 6.3348446,
-	  "title": "No Distance Left to Run (2010)",
-	  "youtube_id": "asdfqwerty"
-	},
-	{
-	  "movie_id": 129536,
-	  "prediction": 6.07897,
-	  "title": "Code Name Coq Rouge (1989)",
-	  "youtube_id": "asdfqwerty"
-	},
-	{
-	  "movie_id": 77736,
-	  "prediction": 5.9684463,
-	  "title": "Crazy Stone (Fengkuang de shitou) (2006)",
-	  "youtube_id": "asdfqwerty"
-	},
-	{
-	  "movie_id": 117907,
-	  "prediction": 5.914757,
-	  "title": "My Brother Tom (2001)",
-	  "youtube_id": "asdfqwerty"
-	},
-	{
-	  "movie_id": 112577,
-	  "prediction": 5.868834,
-	  "title": "Willie & Phil (1980)",
-	  "youtube_id": "asdfqwerty"
-	}
-]`
 
-const itemTempl = `
-<div>
-<h2>{{ .Title }}</h2>
-<p>YouTube ID: {{ .YoutubeID }}, score: {{ .Prediction }}</p>
-<p>URL: <a href="https://www.youtube.com/watch?v={{ .YoutubeID }}">https://www.youtube.com/watch?v={{ .YoutubeID }}</a></p>
-<iframe src="https://www.youtube.com/embed/{{ .YoutubeID }}" width="853" height="480" frameborder="0" allowfullscreen></iframe>
-</div>
-`
+// const fakeResp = `[
+// 	{
+// 	  "movie_id": 121029,
+// 	  "prediction": 6.3348446,
+// 	  "title": "No Distance Left to Run (2010)",
+// 	  "youtube_id": "asdfqwerty"
+// 	},
+// 	{
+// 	  "movie_id": 129536,
+// 	  "prediction": 6.07897,
+// 	  "title": "Code Name Coq Rouge (1989)",
+// 	  "youtube_id": "asdfqwerty"
+// 	},
+// 	{
+// 	  "movie_id": 77736,
+// 	  "prediction": 5.9684463,
+// 	  "title": "Crazy Stone (Fengkuang de shitou) (2006)",
+// 	  "youtube_id": "asdfqwerty"
+// 	},
+// 	{
+// 	  "movie_id": 117907,
+// 	  "prediction": 5.914757,
+// 	  "title": "My Brother Tom (2001)",
+// 	  "youtube_id": "asdfqwerty"
+// 	},
+// 	{
+// 	  "movie_id": 112577,
+// 	  "prediction": 5.868834,
+// 	  "title": "Willie & Phil (1980)",
+// 	  "youtube_id": "asdfqwerty"
+// 	}
+// ]`
 
 func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "It's alive!")
@@ -70,8 +64,25 @@ type Movie struct {
 	YoutubeID  string  `json:"youtube_id"`
 }
 
+func getSingleParameter(r *http.Request, param string) string {
+	params := r.URL.Query()[param]
+	if len(params) < 1 {
+		log.Printf("request missing parameter: %v\n", param)
+		return ""
+	}
+
+	if len(params) > 1 {
+		log.Printf("too many parameters: %v\nusing first: %v\n", params, params[0])
+	}
+
+	return params[0]
+}
+
 func list(w http.ResponseWriter, r *http.Request) {
-	sess := Session{UserID: 10, MovieID: 10}
+	userID, _ := strconv.Atoi(getSingleParameter(r, "user_id"))
+	movieID, _ := strconv.Atoi(getSingleParameter(r, "movie_id"))
+
+	sess := Session{UserID: userID, MovieID: movieID}
 	js, err := json.Marshal(sess)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -80,17 +91,22 @@ func list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rd := bytes.NewReader(js)
-	_ = rd
-	// resp, err := http.Post(alsGCF, "application/json", rd)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	log.Println(err)
-	// 	return
-	// }
+	resp, err := http.Post(alsGCF, "application/json", rd)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
 
-	// body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	body := []byte(fakeResp)
+	// body := []byte(fakeResp)
+
+	log.Printf("received body: %v", string(body))
 
 	var movies []Movie
 	err = json.Unmarshal(body, &movies)
@@ -118,7 +134,7 @@ func view(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", home)
-	http.HandleFunc("/list", list)
-	http.HandleFunc("/view", view)
+	http.HandleFunc("/list/", list)
+	http.HandleFunc("/view/", view)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

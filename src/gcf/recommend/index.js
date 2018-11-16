@@ -25,13 +25,13 @@ let mysqlPool;
 const recQuery =
   `SELECT r.movie_id, 
           r.prediction,
-          y.title,
+          mv.title,
           y.youtube_id
      FROM recommendations r,
-          -- movies mv,
+          movies mv,
           ml_youtube y
     WHERE user_id = ?
-      -- AND r.movie_id = mv.movie_id
+      AND r.movie_id = mv.movie_id
       AND y.movie_id = r.movie_id 
     ORDER BY r.prediction DESC 
     LIMIT 10`;
