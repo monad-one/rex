@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Movie Recommendations</title>
+    </head>
+    <body>
+        {{range .}}
+        <div>
+            <h2>{{.Title}}</h2>
+            <p>Movie ID: {{ .MovieID }}</p>
+            <p>YouTube ID: {{ .YoutubeID }}, score: {{ .Prediction }}</p>
+            <p>URL: <a href="https://www.youtube.com/watch?v={{ .YoutubeID }}">https://www.youtube.com/watch?v={{ .YoutubeID }}</a></p>
+            <iframe src="https://www.youtube.com/embed/{{ .YoutubeID }}" width="853" height="480" frameborder="0" allowfullscreen></iframe>
+        </div> 
+        {{else}}
+        <div><strong>No recommendations :(</strong></div>
+        {{end}}
+    </body>
+</html>
