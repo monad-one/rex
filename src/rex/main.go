@@ -9,6 +9,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"google.golang.org/appengine" // Required external App Engine library
+	"google.golang.org/appengine/urlfetch"
 )
 
 const alsGCF = "https://us-central1-devfest18-221623.cloudfunctions.net/recommend"
@@ -90,8 +93,11 @@ func list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := appengine.NewContext(r)
+	client := urlfetch.Client(ctx)
+
 	rd := bytes.NewReader(js)
-	resp, err := http.Post(alsGCF, "application/json", rd)
+	resp, err := client.Post(alsGCF, "application/json", rd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
@@ -128,13 +134,10 @@ func list(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func view(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "It's alive!")
-}
-
 func main() {
 	http.HandleFunc("/", home)
-	http.HandleFunc("/list/", list)
-	http.HandleFunc("/view/", view)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.HandleFunc("/list", list)
+
+	//log.Fatal(http.ListenAndServe(":8080", nil))
+	appengine.Main()
 }
