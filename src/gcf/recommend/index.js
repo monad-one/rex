@@ -27,7 +27,7 @@ const recQuery =
           r.prediction,
           mv.title,
           y.youtube_id
-     FROM recommendations r,
+     FROM rec_als r,
           movies mv,
           ml_youtube y
     WHERE user_id = ?

@@ -13,6 +13,7 @@ Recommendation System => RecSys => REX
 - `src/algs`: recommendation algorithms
 - `src/db`: database creation scripts
 - `src/gcf`: cloud functions
+- `src/rex`: presentation layer
 
 ## References
 

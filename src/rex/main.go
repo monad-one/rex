@@ -16,39 +16,6 @@ import (
 
 const alsGCF = "https://us-central1-devfest18-221623.cloudfunctions.net/recommend"
 
-// const fakeResp = `[
-// 	{
-// 	  "movie_id": 121029,
-// 	  "prediction": 6.3348446,
-// 	  "title": "No Distance Left to Run (2010)",
-// 	  "youtube_id": "asdfqwerty"
-// 	},
-// 	{
-// 	  "movie_id": 129536,
-// 	  "prediction": 6.07897,
-// 	  "title": "Code Name Coq Rouge (1989)",
-// 	  "youtube_id": "asdfqwerty"
-// 	},
-// 	{
-// 	  "movie_id": 77736,
-// 	  "prediction": 5.9684463,
-// 	  "title": "Crazy Stone (Fengkuang de shitou) (2006)",
-// 	  "youtube_id": "asdfqwerty"
-// 	},
-// 	{
-// 	  "movie_id": 117907,
-// 	  "prediction": 5.914757,
-// 	  "title": "My Brother Tom (2001)",
-// 	  "youtube_id": "asdfqwerty"
-// 	},
-// 	{
-// 	  "movie_id": 112577,
-// 	  "prediction": 5.868834,
-// 	  "title": "Willie & Phil (1980)",
-// 	  "youtube_id": "asdfqwerty"
-// 	}
-// ]`
-
 func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "It's alive!")
 }
@@ -109,8 +76,6 @@ func list(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-
-	// body := []byte(fakeResp)
 
 	log.Printf("received body: %v", string(body))
 
